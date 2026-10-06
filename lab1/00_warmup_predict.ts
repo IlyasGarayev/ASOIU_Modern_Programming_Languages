@@ -6,6 +6,7 @@ class Cat extends Animal { meow() { return "meow"; } }
 
 // CASE 1 - a function that receives a string or null
 function shout(s: string | null) {
+  // if (s === null) throw new Error("null is not allowed");
   return s.toUpperCase();
 }
 

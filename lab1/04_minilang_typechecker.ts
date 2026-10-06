@@ -41,12 +41,39 @@ function check(e: Expr, env: Env): Type {
       return "bool";
 
     // TASK 1 - T-Str:  a string literal has type string.
+    case "str":
+      return "string";
 
     // TASK 2 - T-Add:  int + int : int      string + string : string
     //                  any other combination: throw new CheckError("...")
+    case "add": {
+      const leftType = check(e.left, env);
+      const rightType = check(e.right, env);
+      if (leftType === "int" && rightType === "int") {
+        return "int";
+      } else if (leftType === "string" && rightType === "string") {
+        return "string";
+      } else {
+        throw new CheckError("invalid types for addition: " + leftType + " + " + rightType);
+      }
+    }
 
     // TASK 3 - T-If:   the condition must be bool, both branches must have the SAME
     //                  type T, and the whole expression has type T.
+    case "if": {
+      const condType = check(e.cond, env);
+      expectType(condType, "bool", "condition of if");
+
+      const thenType = check(e.then, env);
+      const elseType = check(e.else, env);
+      if (thenType !== elseType) {
+        throw new CheckError("branches of if have different types: " + thenType + " vs " + elseType);
+      }
+      return thenType;
+    }
+
+    default:
+      throw new CheckError("no rule applies for expression kind: " + (e as any).kind);
   }
 }
 

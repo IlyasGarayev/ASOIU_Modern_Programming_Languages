@@ -7,7 +7,7 @@
 
 // ---- PREDICT (1 min): the  any  version. Compile error, run-time error, or fine? ----
 function firstAny(xs: any[]): any { return xs[0]; }
-const oops = () => firstAny([10, 20]).toUpperCase();
+const oops = () => firstAny([10, 20]).toString().toUpperCase();
 
 // ---- The generic version from the lecture: the output type follows the input type ----
 function first<T>(xs: T[]): T | undefined { return xs.length > 0 ? xs[0] : undefined; }
@@ -15,12 +15,12 @@ const a = first([10, 20]);        // hover over  a
 const b = first(["x", "y"]);      // hover over  b
 
 // TASK 1 - last: like first, for the last element. Make it generic.
-function last(xs: unknown[]): unknown {
+function last<T>(xs: T[]): T | undefined {
   return xs.length > 0 ? xs[xs.length - 1] : undefined;
 }
 
 // TASK 2 - pair: a tuple that remembers BOTH types.   pair(1, "a")  has type  [number, string]
-function pair(x: unknown, y: unknown): unknown[] {
+function pair(x: number, y: string): [number, string] {
   return [x, y];
 }
 
@@ -32,7 +32,7 @@ function longest(x: unknown, y: unknown): unknown {
 
 // TASK 4 - pluck: read one property from every object. The key must exist, and the
 // result type must follow the key.   Hint:  <T, K extends keyof T>  and the type  T[K]
-function pluck(items: unknown[], key: string): unknown[] {
+function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {
   return items.map(item => item[key]);
 }
 

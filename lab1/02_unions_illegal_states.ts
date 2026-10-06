@@ -7,10 +7,11 @@
 
 // ---- BEFORE: one "bag of optional fields" ---------------------------------------
 interface JobLoose {
-  status: "queued" | "running" | "done" | "failed";
+  status: "queued" | "running" | "done" | "failed" | "cancelled";
   progress?: number;     // only meaningful while running
   accuracy?: number;     // only meaningful when done
   error?: string;        // only meaningful when failed
+  by?: string;           // only meaningful when cancelled
 }
 // This compiles. It is nonsense: a queued job that has an accuracy AND an error.
 const nonsense: JobLoose = { status: "queued", accuracy: 0.99, error: "out of memory" };
@@ -19,9 +20,14 @@ const nonsense: JobLoose = { status: "queued", accuracy: 0.99, error: "out of me
 // One object type per state. Each has a literal  kind  tag and ONLY its own fields:
 //   queued  -> no extra fields            running -> progress: number   (0..1)
 //   done    -> accuracy: number           failed  -> error: string
+//   cancelled -> by: string
 type Job =
   | { kind: "queued" }
-  | { kind: "running"; progress: number };     // <- add the two missing cases
+  | { kind: "running"; progress: number }
+  | { kind: "done"; accuracy: number }
+  | { kind: "failed"; error: string }
+  | { kind: "cancelled"; by: string }
+;
 
 // Compile-time tests. Do not edit them.
 // "@ts-expect-error" means: the NEXT line MUST be a type error.
@@ -43,7 +49,14 @@ function describe(job: Job): string {
   switch (job.kind) {
     case "queued":
       return "waiting";
-    // <- add the other cases
+    case "running":
+      return `running ${Math.round(job.progress * 100)}%`;
+    case "done":
+      return `done, accuracy ${job.accuracy.toFixed(2)}`;
+    case "failed":
+      return `FAILED: ${job.error}`;
+    case "cancelled":
+      return `cancelled by ${job.by}`;
   }
 }
 
@@ -64,4 +77,4 @@ check("T2 queued", () => describe({ kind: "queued" }), "waiting");
 check("T2 running", () => describe({ kind: "running", progress: 0.4 }), "running 40%");
 check("T2 done", () => describe(ok1), "done, accuracy 0.93");
 check("T2 failed", () => describe(ok2), "FAILED: out of memory");
-// check("T3 cancelled", () => describe({ kind: "cancelled", by: "Leyla" }), "cancelled by Leyla");
+check("T3 cancelled", () => describe({ kind: "cancelled", by: "Leyla" }), "cancelled by Leyla");
